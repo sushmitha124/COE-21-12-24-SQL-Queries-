@@ -1,3 +1,84 @@
+mysql> select * from customer;
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2001 | hoffman  | london   |    100 | 1001 |
+| 2002 | giovanni | rome     |    200 | 1003 |
+| 2003 | liu      | san jose |    200 | 1002 |
+| 2004 | grass    | berlin   |    300 | 1002 |
+| 2006 | clemens  | london   |    100 | 1001 |
+| 2007 | pereira  | rome     |    100 | 1004 |
+| 2008 | cisneros | san jose |    300 | 1007 |
++------+----------+----------+--------+------+
+7 rows in set (0.00 sec)
+mysql> select * from salespeople;
++------+---------+-----------+------+
+| snum | sname   | city      | comm |
++------+---------+-----------+------+
+| 1001 | peel    | london    | 0.12 |
+| 1002 | serres  | san jose  | 0.13 |
+| 1003 | axelrod | new york  | 0.10 |
+| 1004 | motika  | london    | 0.11 |
+| 1005 | fran    | london    | 0.26 |
+| 1007 | rifkin  | barcelona | 0.15 |
++------+---------+-----------+------+
+6 rows in set (0.00 sec)
+SQL> select s.sname,count(c.cnum) from salespeople s left join customer c on s.snum=c.snum group by s.snum,s.sname order by s.snum;
+
+SNAME                          COUNT(C.CNUM)
+------------------------------ -------------
+peel                                       2
+serres                                     2
+axelrod                                    1
+motika                                     1
+fran                                       0
+rifkin                                     1
+
+6 rows selected.
+SQL> select s.sname,avg(c.rating) from salespeople s join customer c on s.snum=c.snum group by s.snum,s.sname order by avg(c.rating) desc fetch first 1 row only;
+
+SNAME                          AVG(C.RATING)
+------------------------------ -------------
+rifkin                                   300
+SQL> selects.sname,avg(c.rating) as avg_rating from salespeople s join customer c on s.snum = c.snum group by s.snum, s.sname avg(c.rating)=(select min(avg_rating)from (select avg(c.rating) as avg_rating from salespeople s join customer c on s.snum = c.snum group by s.snum)subquery)order by avg_rating;
+
+SNAME                          AVG_RATING
+------------------------------ ----------
+motika                                100
+peel                                  100
+
+SQL> select s.sname,s.city,c.city from salespeople s join customer c on s.snum=c.snum where s.
+city=c.city;
+
+SNAME                          CITY                           CITY
+------------------------------ ------------------------------ ------------------------------
+peel                           london                         london
+serres                         san jose                       san jose
+peel                           london                         london
+
+SQL> select s.sname,s.snum from salespeople s join customer c on s.snum=c.snum group by s.snum
+,s.sname having count(c.cnum)>1;
+
+SNAME                                SNUM
+------------------------------ ----------
+peel                                 1001
+serres                               1002
+serres                               1002
+
+SQL> select c.cname,c.rating,c.city from customer c where c.city='san jose' and c.rating>200;
+
+CNAME                              RATING CITY
+------------------------------ ---------- ------------------------------
+cisneros                              300 san jose
+
+SQL> select c.cname,c.rating,c.city from customer c where c.rating >(select avg(c1.rating) fro
+m customer c1 where c1.city='san jose');
+
+CNAME                              RATING CITY
+------------------------------ ---------- ------------------------------
+grass                                 300 berlin
+cisneros                              300 san jose
+
 Q1. Identify which salesperson has generated the highest total sales.
 select s.snum,count(*) from salespeople s,customer c,orders o where s.snum=c.snum and c.cnum=o.cnum group by s.snum order by s.snum limit 1;
 +------+----------+
